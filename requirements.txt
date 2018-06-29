@@ -1,0 +1,3 @@
+aiohttp >= 3
+aiohttp-jinja2
+wcpan.logger
