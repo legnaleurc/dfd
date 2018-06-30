@@ -16,14 +16,14 @@ class FiltersHandler(aw.View):
         except InvalidFilterError:
             return aw.Response(status=400)
         rv = str(new_id)
-        return aw.Response(text=rv)
+        return aw.Response(text=rv, content_type='application/json')
 
     async def get(self):
         filters = self.request.app['filters']
         rv = await filters.get()
         rv = json.dumps(rv)
         rv = rv + '\n'
-        return aw.Response(text=rv)
+        return aw.Response(text=rv, content_type='application/json')
 
     async def put(self):
         id_ = self.request.match_info['id']
