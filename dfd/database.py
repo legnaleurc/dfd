@@ -1,8 +1,9 @@
 import asyncio
-import concurrent.futures as cf
+from concurrent.futures import ProcessPoolExecutor
+from contextlib import closing, contextmanager
 import re
 import sqlite3
-from typing import Dict, Text
+from typing import Self
 
 
 SQL_CREATE_TABLES = [
@@ -28,29 +29,28 @@ class InvalidFilterError(Exception):
 
 
 class Filters(object):
-    def __init__(self, dsn: Text) -> None:
+    def __init__(self, dsn: str) -> None:
         self._dsn = dsn
-        self._loop = asyncio.get_event_loop()
-        self._pool = cf.ProcessPoolExecutor()
+        self._pool = ProcessPoolExecutor()
 
-    async def __aenter__(self) -> "Filters":
+    async def __aenter__(self) -> Self:
         await self._bg(initialize)
         return self
 
     async def __aexit__(self, type_, value, traceback) -> bool:
         self._pool.shutdown()
 
-    async def add(self, new_filter: Text) -> int:
+    async def add(self, new_filter: str) -> int:
         try:
             re.compile(new_filter)
         except Exception:
             raise InvalidFilterError(new_filter)
         return await self._bg(add, new_filter)
 
-    async def get(self) -> Dict[int, Text]:
+    async def get(self) -> dict[int, str]:
         return await self._bg(get)
 
-    async def update(self, id_: int, new_filter: Text) -> bool:
+    async def update(self, id_: int, new_filter: str) -> bool:
         try:
             re.compile(new_filter)
         except Exception:
@@ -61,96 +61,79 @@ class Filters(object):
         return await self._bg(remove, id_)
 
     async def _bg(self, fn, *args):
-        return await self._loop.run_in_executor(self._pool, fn, self._dsn, *args)
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(self._pool, fn, self._dsn, *args)
 
 
-class Database(object):
-    def __init__(self, dsn: Text) -> None:
-        self._dsn = dsn
-
-    def __enter__(self) -> sqlite3.Connection:
-        self._db = sqlite3.connect(self._dsn)
-        self._db.row_factory = sqlite3.Row
-        return self._db
-
-    def __exit__(self, type_, value, traceback) -> bool:
-        self._db.close()
+@contextmanager
+def database(dsn: str):
+    with closing(sqlite3.connect(dsn)) as db:
+        db.row_factory = sqlite3.Row
+        yield db
 
 
-class ReadOnly(object):
-    def __init__(self, db: sqlite3.Connection) -> None:
-        self._db = db
-
-    def __enter__(self) -> sqlite3.Cursor:
-        self._cursor = self._db.cursor()
-        return self._cursor
-
-    def __exit__(self, type_, value, traceback) -> bool:
-        self._cursor.close()
+@contextmanager
+def read_only(dsn: str):
+    with database(dsn) as db, closing(db.cursor()) as cursor:
+        yield cursor
 
 
-class ReadWrite(object):
-    def __init__(self, db: sqlite3.Connection) -> None:
-        self._db = db
-
-    def __enter__(self) -> sqlite3.Cursor:
-        self._cursor = self._db.cursor()
-        return self._cursor
-
-    def __exit__(self, type_, value, traceback) -> bool:
-        if type_ is None:
-            self._db.commit()
-        else:
-            self._db.rollback()
-        self._cursor.close()
-
-
-def initialize(dsn: Text):
-    with Database(dsn) as db:
+@contextmanager
+def read_write(dsn: str):
+    with database(dsn) as db, closing(db.cursor()) as cursor:
         try:
-            # initialize table
-            with ReadWrite(db) as query:
-                for sql in SQL_CREATE_TABLES:
-                    query.execute(sql)
-        except sqlite3.OperationalError as e:
-            pass
-
-        # check the schema version
-        with ReadOnly(db) as query:
-            query.execute("PRAGMA user_version;")
-            rv = query.fetchone()
-        version = rv[0]
-
-        if CURRENT_SCHEMA_VERSION > version:
-            migrate(db, version)
+            yield cursor
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
 
 
-def migrate(db: sqlite3.Connection, version: Text) -> None:
+def initialize(dsn: str):
+    # initialize table
+    try:
+        with read_write(dsn) as query:
+            for sql in SQL_CREATE_TABLES:
+                query.execute(sql)
+    except sqlite3.OperationalError as e:
+        pass
+
+    # check the schema version
+    with read_only(dsn) as query:
+        query.execute("PRAGMA user_version;")
+        rv = query.fetchone()
+    version = rv[0]
+
+    if CURRENT_SCHEMA_VERSION > version:
+        migrate(dsn, version)
+
+
+def migrate(dsn: str, version: str) -> None:
     raise NotImplementedError()
 
 
-def add(dsn: Text, new_filter: Text) -> int:
-    with Database(dsn) as db, ReadWrite(db) as query:
+def add(dsn: str, new_filter: str) -> int:
+    with read_write(dsn) as query:
         query.execute("INSERT INTO filters (filter) VALUES (?);", (new_filter,))
         id_ = query.lastrowid
     return id_
 
 
-def get(dsn: Text) -> Dict[int, Text]:
-    with Database(dsn) as db, ReadOnly(db) as query:
+def get(dsn: str) -> dict[int, str]:
+    with read_only(dsn) as query:
         query.execute("SELECT id, filter FROM filters;")
         rv = query.fetchall()
     rv = dict(rv)
     return rv
 
 
-def update(dsn: Text, id_: int, new_filter: Text) -> bool:
-    with Database(dsn) as db, ReadWrite(db) as query:
+def update(dsn: str, id_: int, new_filter: str) -> bool:
+    with read_write(dsn) as query:
         query.execute("UPDATE filters SET filter=? WHERE id=?;", (new_filter, id_))
     return True
 
 
-def remove(dsn: Text, id: int) -> bool:
-    with Database(dsn) as db, ReadWrite(db) as query:
+def remove(dsn: str, id_: int) -> bool:
+    with read_write(dsn) as query:
         query.execute("DELETE FROM filters WHERE id=?;", (id_))
     return True
