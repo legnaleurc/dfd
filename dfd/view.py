@@ -3,6 +3,5 @@ import aiohttp_jinja2 as aj
 
 
 class IndexHandler(aw.View):
-
     async def get(self):
-        return aj.render_template('index.html', self.request, None)
+        return aj.render_template("index.html", self.request, None)

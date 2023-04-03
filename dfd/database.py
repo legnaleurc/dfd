@@ -6,36 +6,34 @@ from typing import Dict, Text
 
 
 SQL_CREATE_TABLES = [
-    '''
+    """
     CREATE TABLE filters (
         id INTEGER PRIMARY KEY,
         filter TEXT
     );
-    ''',
-    'PRAGMA user_version = 1;',
+    """,
+    "PRAGMA user_version = 1;",
 ]
 
 CURRENT_SCHEMA_VERSION = 1
 
 
 class InvalidFilterError(Exception):
-
     def __init__(self, filter_):
         super().__init__()
         self._filter = filter_
 
     def __str__(self):
-        return 'invalid filter: {0}'.format(self._filter)
+        return "invalid filter: {0}".format(self._filter)
 
 
 class Filters(object):
-
     def __init__(self, dsn: Text) -> None:
         self._dsn = dsn
         self._loop = asyncio.get_event_loop()
         self._pool = cf.ProcessPoolExecutor()
 
-    async def __aenter__(self) -> 'Filters':
+    async def __aenter__(self) -> "Filters":
         await self._bg(initialize)
         return self
 
@@ -63,12 +61,10 @@ class Filters(object):
         return await self._bg(remove, id_)
 
     async def _bg(self, fn, *args):
-        return await self._loop.run_in_executor(self._pool, fn, self._dsn,
-                                                *args)
+        return await self._loop.run_in_executor(self._pool, fn, self._dsn, *args)
 
 
 class Database(object):
-
     def __init__(self, dsn: Text) -> None:
         self._dsn = dsn
 
@@ -82,7 +78,6 @@ class Database(object):
 
 
 class ReadOnly(object):
-
     def __init__(self, db: sqlite3.Connection) -> None:
         self._db = db
 
@@ -95,7 +90,6 @@ class ReadOnly(object):
 
 
 class ReadWrite(object):
-
     def __init__(self, db: sqlite3.Connection) -> None:
         self._db = db
 
@@ -123,7 +117,7 @@ def initialize(dsn: Text):
 
         # check the schema version
         with ReadOnly(db) as query:
-            query.execute('PRAGMA user_version;')
+            query.execute("PRAGMA user_version;")
             rv = query.fetchone()
         version = rv[0]
 
@@ -136,31 +130,27 @@ def migrate(db: sqlite3.Connection, version: Text) -> None:
 
 
 def add(dsn: Text, new_filter: Text) -> int:
-    with Database(dsn) as db, \
-         ReadWrite(db) as query:
-        query.execute('INSERT INTO filters (filter) VALUES (?);', (new_filter,))
+    with Database(dsn) as db, ReadWrite(db) as query:
+        query.execute("INSERT INTO filters (filter) VALUES (?);", (new_filter,))
         id_ = query.lastrowid
     return id_
 
 
 def get(dsn: Text) -> Dict[int, Text]:
-    with Database(dsn) as db, \
-         ReadOnly(db) as query:
-        query.execute('SELECT id, filter FROM filters;')
+    with Database(dsn) as db, ReadOnly(db) as query:
+        query.execute("SELECT id, filter FROM filters;")
         rv = query.fetchall()
     rv = dict(rv)
     return rv
 
 
 def update(dsn: Text, id_: int, new_filter: Text) -> bool:
-    with Database(dsn) as db, \
-         ReadWrite(db) as query:
-        query.execute('UPDATE filters SET filter=? WHERE id=?;', (new_filter, id_))
+    with Database(dsn) as db, ReadWrite(db) as query:
+        query.execute("UPDATE filters SET filter=? WHERE id=?;", (new_filter, id_))
     return True
 
 
 def remove(dsn: Text, id: int) -> bool:
-    with Database(dsn) as db, \
-         ReadWrite(db) as query:
-        query.execute('DELETE FROM filters WHERE id=?;', (id_))
+    with Database(dsn) as db, ReadWrite(db) as query:
+        query.execute("DELETE FROM filters WHERE id=?;", (id_))
     return True
