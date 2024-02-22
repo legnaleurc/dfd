@@ -12,7 +12,8 @@ import aiohttp_jinja2 as aj
 import jinja2
 from wcpan.logging import ConfigBuilder
 
-from . import api, view, database
+from . import api, view
+from .database import Filters
 
 
 class Daemon(object):
@@ -52,11 +53,10 @@ class Daemon(object):
 
         db_path = self._kwargs.database
 
-        async with database.Filters(db_path) as filters, server_context(
-            app, self._kwargs.listen
-        ):
+        async with Filters(db_path) as filters:
             app["filters"] = filters
-            await self._until_finished()
+            async with server_context(app, self._kwargs.listen):
+                await self._until_finished()
 
         return 0
 
