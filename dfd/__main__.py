@@ -26,22 +26,14 @@ class Daemon(object):
             .to_dict()
         )
 
-    def __call__(self):
+    async def __call__(self):
         loop = asyncio.get_running_loop()
-        loop.create_task(self._guard())
         loop.add_signal_handler(signal.SIGINT, self._close)
-        loop.run_forever()
-        loop.close()
-
-        return 0
-
-    async def _guard(self):
         try:
             return await self._main()
         except Exception:
             getLogger(__name__).exception("main function error")
         finally:
-            loop = asyncio.get_running_loop()
             loop.stop()
         return 1
 
@@ -109,6 +101,7 @@ def setup_api_path(app: Application):
     app.router.add_view(r"/api/v1/filters/{id:\d+}", api.FiltersHandler)
 
 
-main = Daemon(sys.argv)
-exit_code = main()
-sys.exit(exit_code)
+if __name__ == "__name__":
+    main = Daemon(sys.argv)
+    exit_code = asyncio.run(main())
+    sys.exit(exit_code)
