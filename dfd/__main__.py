@@ -18,7 +18,6 @@ from . import api, view, database
 class Daemon(object):
     def __init__(self, args):
         self._kwargs = parse_args(args[1:])
-        self._loop = asyncio.get_event_loop()
         self._finished = asyncio.Event()
         dictConfig(
             ConfigBuilder(path="/tmp/dfd.log", rotate=True)
@@ -27,10 +26,11 @@ class Daemon(object):
         )
 
     def __call__(self):
-        self._loop.create_task(self._guard())
-        self._loop.add_signal_handler(signal.SIGINT, self._close)
-        self._loop.run_forever()
-        self._loop.close()
+        loop = asyncio.get_running_loop()
+        loop.create_task(self._guard())
+        loop.add_signal_handler(signal.SIGINT, self._close)
+        loop.run_forever()
+        loop.close()
 
         return 0
 
@@ -40,7 +40,8 @@ class Daemon(object):
         except Exception:
             getLogger(__name__).exception("main function error")
         finally:
-            self._loop.stop()
+            loop = asyncio.get_running_loop()
+            loop.stop()
         return 1
 
     async def _main(self):
