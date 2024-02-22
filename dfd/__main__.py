@@ -101,7 +101,7 @@ def setup_api_path(app: Application):
     app.router.add_view(r"/api/v1/filters/{id:\d+}", api.FiltersHandler)
 
 
-if __name__ == "__name__":
+if __name__ == "__main__":
     main = Daemon(sys.argv)
     exit_code = asyncio.run(main())
     sys.exit(exit_code)
