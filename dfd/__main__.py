@@ -49,10 +49,7 @@ class Daemon(object):
         setup_static_and_view(app)
         setup_api_path(app)
 
-        root = op.dirname(__file__)
-        root = op.join(root, "..")
-        root = op.normpath(root)
-        db_path = op.join(root, "filters.sqlite")
+        db_path = self._kwargs.database
 
         async with database.Filters(db_path) as filters, server_context(
             app, self._kwargs.listen
@@ -86,6 +83,7 @@ def parse_args(args):
     parser = ArgumentParser("dfd")
 
     parser.add_argument("-l", "--listen", required=True, type=int)
+    parser.add_argument("--database", required=True, type=str)
 
     args = parser.parse_args(args)
 
