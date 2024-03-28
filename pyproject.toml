@@ -13,7 +13,7 @@ aiohttp-jinja2 = "^1.5.1"
 wcpan-logging = "^2.0.2"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.3.0"
+black = "^24.3.0"
 
 [build-system]
 requires = ["poetry-core"]
