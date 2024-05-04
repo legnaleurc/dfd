@@ -32,12 +32,15 @@
     },
   });
 
-  $: isEmpty = !regexp;
+  let line = regexp;
+
+  $: isEmpty = !line;
+  $: unchanged = line === regexp;
   $: icon = isEmpty ? "delete" : "save";
 
   function handleClick() {
     if (!isEmpty) {
-      $update.mutate({ regexp });
+      $update.mutate({ regexp: line });
     } else {
       $delete_.mutate();
     }
@@ -49,12 +52,13 @@
     type="text"
     class="input input-bordered w-full font-mono"
     placeholder="Delete Filter"
-    bind:value={regexp}
+    bind:value={line}
     use:enterdown={handleClick}
   />
   <button
     class="btn btn-square btn-outline btn-primary"
     class:btn-error={isEmpty}
+    disabled={unchanged}
     on:click={handleClick}
   >
     <Icon name={icon} />
