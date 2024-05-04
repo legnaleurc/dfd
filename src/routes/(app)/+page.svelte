@@ -3,7 +3,17 @@
   import FilterList from "$molecules/FilterList.svelte";
 </script>
 
-<section class="w-full p-2 flex flex-col gap-2">
-  <NewFilterItem />
-  <FilterList />
+<section class="w-full flex flex-col">
+  <div class="sticky-header sticky top-0 z-10 p-2 w-full flex flex-col">
+    <NewFilterItem />
+  </div>
+  <div class="p-2 w-full flex flex-col">
+    <FilterList />
+  </div>
 </section>
+
+<style lang="postcss">
+  .sticky-header {
+    background-color: var(--fallback-b1, oklch(var(--b1) / 1));
+  }
+</style>
