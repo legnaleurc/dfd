@@ -1,4 +1,4 @@
-FROM node:20.12.1-bookworm AS pre-build
+FROM node:20-bookworm AS pre-build
 
 RUN : \
     && apt-get update \
@@ -30,7 +30,7 @@ COPY package.json package-lock.json /app/
 RUN npm ci --omit dev
 
 
-FROM node:20.12.1-bookworm AS production
+FROM node:20-bookworm AS production
 
 USER node
 WORKDIR /app
