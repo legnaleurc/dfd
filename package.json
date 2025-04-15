@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.0.1",
-    "@sveltejs/kit": "^2.8.3",
+    "@sveltejs/kit": "^2.20.6",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
     "@tanstack/svelte-query": "^5.28.13",
     "@types/better-sqlite3": "^7.6.9",
