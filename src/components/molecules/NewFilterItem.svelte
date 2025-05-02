@@ -20,6 +20,9 @@
   let value = "";
 
   function handleClick() {
+    if (!value) {
+      return;
+    }
     $create.mutate({ regexp: value });
   }
 </script>
@@ -32,7 +35,11 @@
     bind:value
     use:enterdown={handleClick}
   />
-  <button class="btn btn-square btn-outline btn-primary" on:click={handleClick}>
+  <button
+    class="btn btn-square btn-outline btn-primary"
+    disabled={!value}
+    on:click={handleClick}
+  >
     <Icon name="add" />
   </button>
 </section>
