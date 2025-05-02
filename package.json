@@ -16,8 +16,8 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=18.x",
-    "npm": ">=8.x"
+    "node": ">=20.x",
+    "npm": ">=10.x"
   },
   "dependencies": {
     "better-sqlite3": "^11.9.1",
