@@ -22,6 +22,7 @@ export default tseslint.config(
         browser: true,
         es2017: true,
         node: true,
+        process: true,
       },
     },
     plugins: {
