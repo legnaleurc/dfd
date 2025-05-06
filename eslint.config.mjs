@@ -1,57 +1,43 @@
-import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
-import svelteParser from "svelte-eslint-parser";
-import sveltePlugin from "eslint-plugin-svelte";
-import prettier from "eslint-config-prettier";
+import { fileURLToPath } from "node:url";
 
-export default tseslint.config(
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  ...sveltePlugin.configs.recommended,
+import js from "@eslint/js";
+import { includeIgnoreFile } from "@eslint/compat";
+import ts from "typescript-eslint";
+import svelte from "eslint-plugin-svelte";
+import prettier from "eslint-config-prettier";
+import globals from "globals";
+
+import svelteConfig from "./svelte.config.js";
+
+const gitignorePath = fileURLToPath(new URL("./.gitignore", import.meta.url));
+
+export default ts.config(
+  includeIgnoreFile(gitignorePath),
+  js.configs.recommended,
+  ...ts.configs.recommended,
+  ...svelte.configs.recommended,
   prettier,
+  ...svelte.configs.prettier,
   {
-    files: ["**/*.{js,ts,svelte}"],
     languageOptions: {
-      parser: tseslint.parser,
-      parserOptions: {
-        sourceType: "module",
-        ecmaVersion: 2020,
-        extraFileExtensions: [".svelte"],
-      },
       globals: {
-        browser: true,
-        es2017: true,
-        node: true,
-        process: true,
+        ...globals.browser,
+        ...globals.node,
       },
     },
-    plugins: {
-      "@typescript-eslint": tseslint.plugin,
-      svelte: sveltePlugin,
+    rules: {
+      "no-undef": "off",
     },
   },
   {
     files: ["**/*.svelte"],
     languageOptions: {
-      parser: svelteParser,
       parserOptions: {
-        parser: tseslint.parser,
+        projectService: true,
+        extraFileExtensions: [".svelte"],
+        parser: ts.parser,
+        svelteConfig,
       },
     },
-  },
-  {
-    ignores: [
-      ".DS_Store",
-      "node_modules/**",
-      "build/**",
-      ".svelte-kit/**",
-      "package/**",
-      ".env",
-      ".env.*",
-      "!.env.example",
-      "pnpm-lock.yaml",
-      "package-lock.json",
-      "yarn.lock",
-    ],
   },
 );
