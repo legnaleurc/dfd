@@ -15,7 +15,8 @@
   const client = useQueryClient();
 
   const update = createMutation({
-    mutationFn: (data: MutableFilter) => patchFilter(id, data).fetch(),
+    mutationFn: (data: MutableFilter) =>
+      patchFilter(id, data).base(location.origin).fetch(),
     onSuccess: () => {
       client.invalidateQueries({
         queryKey: ["filters"],
@@ -24,7 +25,7 @@
   });
 
   const delete_ = createMutation({
-    mutationFn: () => deleteFilter(id).response(),
+    mutationFn: () => deleteFilter(id).base(location.origin).response(),
     onSuccess: () => {
       client.invalidateQueries({
         queryKey: ["filters"],

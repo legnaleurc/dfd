@@ -8,7 +8,8 @@
   const client = useQueryClient();
 
   const create = createMutation({
-    mutationFn: (filter: MutableFilter) => postFilter(filter).fetch(),
+    mutationFn: (filter: MutableFilter) =>
+      postFilter(filter).base(location.origin).fetch(),
     onSuccess: () => {
       client.invalidateQueries({
         queryKey: ["filters"],

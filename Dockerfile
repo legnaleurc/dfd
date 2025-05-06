@@ -13,7 +13,6 @@ USER node
 FROM pre-build AS dev-build
 
 ARG SQLITE_FILE
-ARG PUBLIC_API_ORIGIN
 
 WORKDIR /app
 

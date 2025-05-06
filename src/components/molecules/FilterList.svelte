@@ -6,7 +6,7 @@
 
   const read = createQuery({
     queryKey: ["filters"],
-    queryFn: () => getFilterList().fetch(),
+    queryFn: () => getFilterList().base(location.origin).fetch(),
   });
 </script>
 
