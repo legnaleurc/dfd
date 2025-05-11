@@ -12,8 +12,8 @@
   </div>
 </section>
 
-<style lang="postcss">
+<style lang="css">
   .sticky-header {
-    background-color: var(--fallback-b1, oklch(var(--b1) / 1));
+    background-color: var(--root-bg, var(--color-base-100));
   }
 </style>
