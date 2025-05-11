@@ -12,7 +12,7 @@ USER node
 
 FROM pre-build AS dev-build
 
-ARG SQLITE_FILE
+ARG DATABASE_URL
 
 WORKDIR /app
 

@@ -3,11 +3,11 @@ services:
     build:
       target: production
       args:
-        SQLITE_FILE: /mnt/data/dfd.sqlite
+        DATABASE_URL: /mnt/data/dfd.sqlite
     volumes:
       - ${DFD_DATA_DIR}:/mnt/data:rw
     ports:
       - "${DFD_HOST}:${DFD_PORT}:3000"
     environment:
-      SQLITE_FILE: /mnt/data/dfd.sqlite
+      DATABASE_URL: /mnt/data/dfd.sqlite
     command: node build
