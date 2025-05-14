@@ -12,8 +12,6 @@ USER node
 
 FROM pre-build AS dev-build
 
-ARG DATABASE_URL
-
 WORKDIR /app
 
 COPY . /app

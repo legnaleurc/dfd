@@ -2,8 +2,6 @@ services:
   dfd:
     build:
       target: production
-      args:
-        DATABASE_URL: /mnt/data/dfd.sqlite
     volumes:
       - ${DFD_DATA_DIR}:/mnt/data:rw
     ports:

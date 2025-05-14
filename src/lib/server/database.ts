@@ -1,8 +1,8 @@
 import { drizzle } from "drizzle-orm/better-sqlite3";
 
-import { DATABASE_URL } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 
 export function connect() {
-  const database = drizzle(DATABASE_URL);
+  const database = drizzle(env.DATABASE_URL);
   return database;
 }
