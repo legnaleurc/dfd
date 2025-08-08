@@ -1,7 +1,17 @@
 services:
+  migrate:
+    build:
+      target: migration
+    volumes:
+      - ${DFD_DATA_DIR}:/mnt/data:rw
+    environment:
+      DATABASE_URL: /mnt/data/dfd.sqlite
+    command: node drizzle
   dfd:
     build:
-      target: production
+      target: server
+    depends_on:
+      - migrate
     volumes:
       - ${DFD_DATA_DIR}:/mnt/data:rw
     ports:
