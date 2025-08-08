@@ -8,4 +8,8 @@ services:
       - "${DFD_HOST}:${DFD_PORT}:3000"
     environment:
       DATABASE_URL: /mnt/data/dfd.sqlite
+    logging:
+      driver: syslog
+      options:
+        tag: dfd-dfd
     command: node build
