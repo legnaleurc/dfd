@@ -13,3 +13,4 @@ try {
 } finally {
   sqlite.close();
 }
+console.info("finished");
