@@ -42,4 +42,3 @@ WORKDIR /app
 
 COPY --chown=node:node --from=migration-build /app/node_modules /app/node_modules
 COPY --chown=node:node drizzle /app/drizzle
-COPY --chown=node:node package.json package-lock.json /app/
