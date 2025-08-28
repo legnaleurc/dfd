@@ -9,7 +9,7 @@ services:
     environment:
       DATABASE_URL: /mnt/data/dfd.sqlite
     logging:
-      driver: syslog
+      driver: journald
       options:
         tag: dfd-dfd
     command: node build
