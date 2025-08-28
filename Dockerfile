@@ -1,4 +1,4 @@
-FROM node:20-bookworm-slim AS pre-build
+FROM node:20-trixie-slim AS pre-build
 
 RUN : \
     && apt-get update \
@@ -27,7 +27,7 @@ COPY package.json package-lock.json /app/
 RUN npm ci --omit dev
 
 
-FROM node:20-bookworm-slim AS production
+FROM node:20-trixie-slim AS production
 
 USER node
 WORKDIR /app
